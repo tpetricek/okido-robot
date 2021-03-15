@@ -4,4 +4,3 @@ node_modules
 src/.fable
 src/bin
 src/obj
-public/bundle.js
