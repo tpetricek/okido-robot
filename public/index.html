@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <style>
+    * { margin:0px; padding:0px; }
+    .game { position:relative; top:3vw; height:50vw; width:59vw; margin:0px auto 0px auto; }
+    .r1 { position:absolute; top:0vw; }
+    .r2 { position:absolute; top:10vw; }
+    .r3 { position:absolute; top:20vw; }
+    .r4 { position:absolute; top:30vw; }
+    .controls { position:absolute; top:42vw; left:11vw; }
+    .controls button { border-style:none; background:#A5A59F; border-radius:1vw; width:6vw; height:6vw; margin-right:1vw; }
+    .controls button:active { background:#6b6b66; }
+    .controls button.mr2 { margin-right:4vw; }
+    .controls button img { max-width:4vw; }
+    .b1 { position:absolute; top:0vw; left:0vw; }
+    .b2 { position:absolute; top:0vw; left:10vw; }
+    .b3 { position:absolute; top:0vw; left:20vw; }
+    .b4 { position:absolute; top:0vw; left:30vw; }
+    .b5 { position:absolute; top:0vw; left:40vw; }
+    .b6 { position:absolute; top:0vw; left:50vw; }
+    .prog { border:4px solid #AA3D2C; border-radius:1vw; width:48vw; left:10vw; height:5vw; position:absolute; top:2vw; }
+    body { background:#DBD0BA;}
+    .box img { max-width:50%; margin:25%; }
+    .box img.robot { max-width:70%; margin:15%; }
+    .prog img { max-height:4vw; top:0.5vw; position:relative; }
+    .prog img.objective { position:absolute; right:0.5vw; top:0.5vw; max-height:4vw; }
+    .box { width:9vw; height:9vw; background:#BCBCB3; border-radius:1vw; }
+    img.robot { transition:top 1s ease, left 1s ease; position:relative;  z-index:100; }
+
+    @keyframes shake {
+      0% { transform: rotate(0deg); }
+      10% { transform: rotate(20deg); }
+      20% { transform: rotate(-20deg); }
+      30% { transform: rotate(20deg); }
+      40% { transform: rotate(-20deg); }
+      50% { transform: rotate(20deg); }
+      60% { transform: rotate(-20deg); }
+      70% { transform: rotate(20deg); }
+      80% { transform: rotate(-20deg); }
+      90% { transform: rotate(20deg); }
+      100% { transform: rotate(0deg); }
+    }    
+    .shake { animation: shake 2s 1; }
+
+    @keyframes win {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(1800deg); }
+    }    
+    .win { animation: win 2s 1; }
+  </style>
+</head>
+<body>
+  <div class="game" id="game">
+  </div>
+  <script src="bundle.js"></script>
+</body>
+</html>

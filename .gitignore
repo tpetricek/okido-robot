@@ -1,0 +1,7 @@
+node_modules
+.config
+.ionide
+src/.fable
+src/bin
+src/obj
+public/bundle.js
