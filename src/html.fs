@@ -110,6 +110,7 @@ type DomNode =
 let createTree ns tag args children =
     let attrs = ResizeArray<_>()
     let props = ResizeArray<_>()
+    let mutable postf = []
     for k, v in args do
       match k, v with 
       | k, Attribute v ->
@@ -117,67 +118,26 @@ let createTree ns tag args children =
       | k, Property o ->
           props.Add(k, o)
       | k, Event f ->
-          props.Add ("on" + k, box (fun o -> f (Common.getProperty o "target") (Common.event()) ))
+          let id = match (dict args).["id"] with Attribute(v) -> v | _ -> failwith "No ID"
+          postf <- (fun () -> 
+            let el = document.getElementById(id)
+            if el.dataset.["has" + k] <> "yay" then
+              el.dataset.["has" + k] <- "yay"
+              el.addEventListener(k, (fun o -> f (Common.getProperty o "target") (Common.event()) )) )::postf
     let attrs = JsInterop.createObj attrs
     let ns = if ns = null || ns = "" then [] else ["namespace", box ns]
     let props = JsInterop.createObj (Seq.append (ns @ ["attributes", attrs]) props)
     let elem = Virtualdom.h(tag, props, children)
-    elem
-
-let mutable counter = 0
+    elem, postf
 
 let rec renderVirtual node = 
   match node with
   | Text(s) -> 
-      box s
+      box s, []
   | Element(ns, tag, attrs, children) ->
-      createTree ns tag attrs (Array.map renderVirtual children)
-
-let rec render node = 
-  match node with
-  | Text(s) -> 
-      document.createTextNode(s) :> Node
-
-  | Element(ns, tag, attrs, children) ->
-      let el = 
-        if ns = null || ns = "" then document.createElement(tag)
-        else document.createElementNS(ns, tag) :?> HTMLElement
-      let rc = Array.map render children
-      for c in rc do el.appendChild(c) |> ignore
-      for k, a in attrs do 
-        match a with
-        | Property(o) -> Common.setProperty el k o
-        | Attribute(v) -> el.setAttribute(k, v)
-        | Event(f) -> () //el.addEventListener(k, U2.Case1(EventListener(f el)))
-      el :> Node
-
-let renderTo (node:HTMLElement) dom = 
-  while box node.lastChild <> null do ignore(node.removeChild(node.lastChild))
-  let el = render dom
-  node.appendChild(el) |> ignore
-
-let createVirtualDomAsyncApp id initial r u = 
-  let event = new Event<'T>()
-  let trigger e = event.Trigger(e)  
-  let mutable container = document.createElement("div") :> Node
-  document.getElementById(id).innerHTML <- ""
-  document.getElementById(id).appendChild(container) |> ignore
-  let mutable tree = Fable.Core.JsInterop.createObj []
-  let mutable state = initial
-
-  let handleEvent evt = Async.StartImmediate <| async {
-    match evt with 
-    | Some e -> 
-        let! ns = u state e 
-        state <- ns
-    | _ -> ()
-    let newTree = r trigger state |> renderVirtual
-    let patches = Virtualdom.diff tree newTree
-    container <- Virtualdom.patch container patches
-    tree <- newTree }
-  
-  handleEvent None
-  event.Publish.Add(Some >> handleEvent)
+      let children, postfs = Array.unzip (Array.map renderVirtual children)
+      let res, postf = createTree ns tag attrs children
+      res, List.append postf (List.concat postfs)
 
 let createVirtualDomApp id initial r u = 
   let event = new Event<'T>()
@@ -190,9 +150,10 @@ let createVirtualDomApp id initial r u =
 
   let handleEvent evt = 
     state <- match evt with Some e -> u state e | _ -> state
-    let newTree = r trigger state |> renderVirtual
+    let newTree, postf = r trigger state |> renderVirtual
     let patches = Virtualdom.diff tree newTree
     container <- Virtualdom.patch container patches
+    for f in postf do f ()
     tree <- newTree
   
   handleEvent None

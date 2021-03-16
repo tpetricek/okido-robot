@@ -43,11 +43,11 @@ let update state = function
     { Program = []; Animation = ""; Playing = None; Robot = 1,1; Objective = pickSock() }
   | Home -> { state with Animation = ""; Playing = None; Robot = 1,1; Program = [] }
   | Code f -> { state with Program = state.Program @ [f] }
-  | Play -> { state with Playing = Some state.Program } |> step
+  | Play when state.Playing = None -> { state with Playing = Some state.Program } |> step
+  | Play -> state
   | Step -> state |> step
 
 let render trigger state =
-  let triggerf e _ _ = trigger e
   if state.Playing.IsSome then window.setTimeout((fun _ -> trigger Step), 1000) |> ignore
   if state.Animation <> "" then window.setTimeout((fun _ -> trigger Home), 3000) |> ignore
   h?div [] [ 
@@ -71,13 +71,18 @@ let render trigger state =
         | _ -> ()
       ]
     ]
+    let handlers e = [ 
+      "id" => match e with Code c -> c | _ -> "go"
+      "touchstart" =!> fun _ je -> je.preventDefault(); trigger e
+      "click" =!>  fun _ _ -> trigger e 
+    ]
     yield h?div ["class" => "controls"] [
       //h?button [ "click" =!> triggerf Reset; "class" => "mr2" ] [ h?img ["src" => "reset.gif"] [] ]
-      h?button [ "click" =!> triggerf (Code "up") ] [ h?img ["src" => "up.gif"] [] ]
-      h?button [ "click" =!> triggerf (Code "right") ] [ h?img ["src" => "right.gif"] [] ]
-      h?button [ "click" =!> triggerf (Code "down") ] [ h?img ["src" => "down.gif"] [] ]
-      h?button [ "click" =!> triggerf (Code "left"); "class" => "mr2" ] [ h?img ["src" => "left.gif"] [] ]
-      h?button [ "click" =!> triggerf Play ] [ h?img ["src" => "go.gif"] [] ]
+      h?button (handlers (Code "up")) [ h?img ["src" => "up.gif"] [] ]
+      h?button (handlers (Code "right")) [ h?img ["src" => "right.gif"] [] ]
+      h?button (handlers (Code "down")) [ h?img ["src" => "down.gif"] [] ]
+      h?button (("class" => "mr2")::(handlers (Code "left"))) [ h?img ["src" => "left.gif"] [] ]
+      h?button (handlers Play) [ h?img ["src" => "go.gif"] [] ]
 
     ]
   ]

@@ -1,7 +1,7 @@
-import { tryFindIndex, ofSeq, singleton, append, empty, item, length, ofArray } from "./.fable/fable-library.3.1.1/List.js";
+import { cons, tryFindIndex, ofSeq, singleton, append, empty, item, length, ofArray } from "./.fable/fable-library.3.1.1/List.js";
 import { Record, Union } from "./.fable/fable-library.3.1.1/Types.js";
 import { record_type, tuple_type, int32_type, option_type, list_type, union_type, string_type } from "./.fable/fable-library.3.1.1/Reflection.js";
-import { partialApply, uncurry, int32ToString, equalArrays, randomNext } from "./.fable/fable-library.3.1.1/Util.js";
+import { int32ToString, equals, equalArrays, randomNext } from "./.fable/fable-library.3.1.1/Util.js";
 import { getItemFromDict } from "./.fable/fable-library.3.1.1/MapUtil.js";
 import { toText, printf, toConsole } from "./.fable/fable-library.3.1.1/String.js";
 import { createVirtualDomApp, op_EqualsBangGreater, op_EqualsGreater, h, El_op_Dynamic_Z7C20BED5 } from "./html.fs.js";
@@ -106,22 +106,47 @@ export function update(state, _arg1) {
             return new State(empty(), void 0, [1, 1], pickSock(), "");
         }
         case 2: {
-            switch (_arg1.tag) {
-                case 4: {
+            let pattern_matching_result_1;
+            if (_arg1.tag === 4) {
+                pattern_matching_result_1 = 0;
+            }
+            else if (_arg1.tag === 3) {
+                pattern_matching_result_1 = 1;
+            }
+            else if (_arg1.tag === 1) {
+                if (equals(state.Playing, void 0)) {
+                    pattern_matching_result_1 = 2;
+                }
+                else {
+                    pattern_matching_result_1 = 3;
+                }
+            }
+            else {
+                pattern_matching_result_1 = 3;
+            }
+            switch (pattern_matching_result_1) {
+                case 0: {
                     return new State(empty(), void 0, [1, 1], state.Objective, "");
                 }
-                case 3: {
+                case 1: {
                     const f = _arg1.fields[0];
                     return new State(append(state.Program, singleton(f)), state.Playing, state.Robot, state.Objective, state.Animation);
                 }
-                case 1: {
+                case 2: {
                     return step(new State(state.Program, state.Program, state.Robot, state.Objective, state.Animation));
                 }
-                case 2: {
-                    return step(state);
-                }
-                default: {
-                    throw (new Error("The match cases were incomplete against type of \u0027Event\u0027 at C:/Tomas/Public/tpetricek/okido/src/app.fs"));
+                case 3: {
+                    switch (_arg1.tag) {
+                        case 1: {
+                            return state;
+                        }
+                        case 2: {
+                            return step(state);
+                        }
+                        default: {
+                            throw (new Error("The match cases were incomplete against type of \u0027Event\u0027 at C:/Tomas/Public/tpetricek/okido/src/app.fs"));
+                        }
+                    }
                 }
             }
         }
@@ -129,17 +154,14 @@ export function update(state, _arg1) {
 }
 
 export function render(trigger, state) {
-    const triggerf = (e, _arg2, _arg1) => {
-        trigger(e);
-    };
     if (state.Playing != null) {
-        const value = window.setTimeout((_arg1_1) => {
+        const value = window.setTimeout((_arg1) => {
             trigger(new Event$(2));
         }, 1000);
         void value;
     }
     if (state.Animation !== "") {
-        const value_1 = window.setTimeout((_arg2_1) => {
+        const value_1 = window.setTimeout((_arg2) => {
             trigger(new Event$(4));
         }, 3000);
         void value_1;
@@ -166,7 +188,18 @@ export function render(trigger, state) {
         else {
             return empty_1();
         }
-    }))), rangeNumber(1, 1, 6))))), rangeNumber(2, 1, 4)), delay(() => singleton_1(El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "controls")))(ofArray([El_op_Dynamic_Z7C20BED5(h, "button")(singleton(op_EqualsBangGreater("click", uncurry(2, partialApply(2, triggerf, [new Event$(3, "up")])))))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "up.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(singleton(op_EqualsBangGreater("click", uncurry(2, partialApply(2, triggerf, [new Event$(3, "right")])))))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "right.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(singleton(op_EqualsBangGreater("click", uncurry(2, partialApply(2, triggerf, [new Event$(3, "down")])))))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "down.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(ofArray([op_EqualsBangGreater("click", uncurry(2, partialApply(2, triggerf, [new Event$(3, "left")]))), op_EqualsGreater("class", "mr2")]))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "left.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(singleton(op_EqualsBangGreater("click", uncurry(2, partialApply(2, triggerf, [new Event$(1)])))))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "go.gif")))(empty())))]))))))))));
+    }))), rangeNumber(1, 1, 6))))), rangeNumber(2, 1, 4)), delay(() => {
+        const handlers = (e) => {
+            let c_1;
+            return ofArray([op_EqualsGreater("id", (e.tag === 3) ? (c_1 = e.fields[0], c_1) : "go"), op_EqualsBangGreater("touchstart", (_arg3, je) => {
+                je.preventDefault();
+                trigger(e);
+            }), op_EqualsBangGreater("click", (_arg5, _arg4) => {
+                trigger(e);
+            })]);
+        };
+        return singleton_1(El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "controls")))(ofArray([El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "up")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "up.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "right")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "right.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "down")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "down.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(cons(op_EqualsGreater("class", "mr2"), handlers(new Event$(3, "left"))))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "left.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(1)))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "go.gif")))(empty())))])));
+    })))))));
 }
 
 export const init = new State(empty(), void 0, [1, 1], pickSock(), "");

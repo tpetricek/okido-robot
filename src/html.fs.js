@@ -1,14 +1,13 @@
 import { Union, toString } from "./.fable/fable-library.3.1.1/Types.js";
 import { insert, substring } from "./.fable/fable-library.3.1.1/String.js";
-import { equals, createAtom, createObj, comparePrimitives, min } from "./.fable/fable-library.3.1.1/Util.js";
+import { createObj, comparePrimitives, min } from "./.fable/fable-library.3.1.1/Util.js";
 import { append, forAll, getEnumerator, rangeNumber, map, delay } from "./.fable/fable-library.3.1.1/Seq.js";
 import { array_type, tuple_type, union_type, obj_type, string_type, lambda_type, unit_type, class_type } from "./.fable/fable-library.3.1.1/Reflection.js";
-import { append as append_1, singleton, empty } from "./.fable/fable-library.3.1.1/List.js";
+import { concat, append as append_1, singleton, cons, empty } from "./.fable/fable-library.3.1.1/List.js";
+import { getItemFromDict } from "./.fable/fable-library.3.1.1/MapUtil.js";
 import { patch, diff, h as h_1 } from "virtual-dom";
-import { map as map_1 } from "./.fable/fable-library.3.1.1/Array.js";
+import { map as map_1, unzip } from "./.fable/fable-library.3.1.1/Array.js";
 import Event$ from "./.fable/fable-library.3.1.1/Event.js";
-import { startImmediate } from "./.fable/fable-library.3.1.1/Async.js";
-import { singleton as singleton_1 } from "./.fable/fable-library.3.1.1/AsyncBuilder.js";
 import { some, value as value_1 } from "./.fable/fable-library.3.1.1/Option.js";
 import { add } from "./.fable/fable-library.3.1.1/Observable.js";
 
@@ -76,6 +75,7 @@ export function DomNode$reflection() {
 export function createTree(ns, tag, args, children) {
     const attrs = [];
     const props = [];
+    let postf = empty();
     const enumerator = getEnumerator(args);
     try {
         while (enumerator["System.Collections.IEnumerator.MoveNext"]()) {
@@ -91,9 +91,24 @@ export function createTree(ns, tag, args, children) {
             else if (matchValue[1].tag === 0) {
                 const k_3 = matchValue[0];
                 const f = matchValue[1].fields[0];
-                void (props.push(["on" + k_3, (o_1) => {
-                    f(o_1["target"], event);
-                }]));
+                let id;
+                const matchValue_1 = getItemFromDict(new Map(args), "id");
+                if (matchValue_1.tag === 1) {
+                    const v_2 = matchValue_1.fields[0];
+                    id = v_2;
+                }
+                else {
+                    throw (new Error("No ID"));
+                }
+                postf = cons(() => {
+                    const el = document.getElementById(id);
+                    if ((el.dataset[("has" + k_3)]) !== "yay") {
+                        el.dataset[("has" + k_3)]="yay";
+                        el.addEventListener(k_3, (o_1) => {
+                            f(o_1["target"], event);
+                        });
+                    }
+                }, postf);
             }
             else {
                 const v_1 = matchValue[1].fields[0];
@@ -109,10 +124,8 @@ export function createTree(ns, tag, args, children) {
     const ns_1 = ((ns === null) ? true : (ns === "")) ? empty() : singleton(["namespace", ns]);
     const props_1 = createObj(append(append_1(ns_1, singleton(["attributes", attrs_1])), props));
     const elem = h_1(tag, props_1, children);
-    return elem;
+    return [elem, postf];
 }
-
-export const counter = createAtom(0);
 
 export function renderVirtual(node) {
     if (node.tag === 1) {
@@ -120,95 +133,18 @@ export function renderVirtual(node) {
         const ns = node.fields[0];
         const children = node.fields[3];
         const attrs = node.fields[2];
-        return createTree(ns, tag, attrs, map_1(renderVirtual, children));
+        const patternInput = unzip(map_1(renderVirtual, children));
+        const postfs = patternInput[1];
+        const children_1 = patternInput[0];
+        const patternInput_1 = createTree(ns, tag, attrs, children_1);
+        const res = patternInput_1[0];
+        const postf = patternInput_1[1];
+        return [res, append_1(postf, concat(postfs))];
     }
     else {
         const s_1 = node.fields[0];
-        return s_1;
+        return [s_1, empty()];
     }
-}
-
-export function render(node) {
-    if (node.tag === 1) {
-        const tag = node.fields[1];
-        const ns = node.fields[0];
-        const children = node.fields[3];
-        const attrs = node.fields[2];
-        const el = ((ns === null) ? true : (ns === "")) ? document.createElement(tag) : document.createElementNS(ns, tag);
-        const rc = map_1(render, children);
-        for (let idx = 0; idx <= (rc.length - 1); idx++) {
-            const c = rc[idx];
-            const value = el.appendChild(c);
-            void value;
-        }
-        for (let idx_1 = 0; idx_1 <= (attrs.length - 1); idx_1++) {
-            const forLoopVar = attrs[idx_1];
-            const k = forLoopVar[0];
-            const a = forLoopVar[1];
-            switch (a.tag) {
-                case 1: {
-                    const v = a.fields[0];
-                    el.setAttribute(k, v);
-                    break;
-                }
-                case 0: {
-                    const f = a.fields[0];
-                    break;
-                }
-                default: {
-                    const o = a.fields[0];
-                    el[k] = o;
-                }
-            }
-        }
-        return el;
-    }
-    else {
-        const s_1 = node.fields[0];
-        return document.createTextNode(s_1);
-    }
-}
-
-export function renderTo(node, dom) {
-    while (!equals(node.lastChild, null)) {
-        void node.removeChild(node.lastChild);
-    }
-    const el = render(dom);
-    const value = node.appendChild(el);
-    void value;
-}
-
-export function createVirtualDomAsyncApp(id, initial, r, u) {
-    const event = new Event$();
-    const trigger = (e) => {
-        event.Trigger(e);
-    };
-    let container = document.createElement("div");
-    document.getElementById(id).innerHTML = "";
-    const value = document.getElementById(id).appendChild(container);
-    void value;
-    let tree = {};
-    let state = initial;
-    const handleEvent = (evt) => {
-        startImmediate(singleton_1.Delay(() => {
-            let e_1;
-            return singleton_1.Combine((evt != null) ? (e_1 = value_1(evt), singleton_1.Bind(u(state, e_1), (_arg1) => {
-                const ns = _arg1;
-                state = ns;
-                return singleton_1.Zero();
-            })) : (void 0, singleton_1.Zero()), singleton_1.Delay(() => {
-                const newTree = renderVirtual(r(trigger, state));
-                const patches = diff(tree, newTree);
-                container = patch(container, patches);
-                tree = newTree;
-                return singleton_1.Zero();
-            }));
-        }));
-    };
-    handleEvent(void 0);
-    add((arg) => {
-        handleEvent(some(arg));
-    }, event.Publish);
 }
 
 export function createVirtualDomApp(id, initial, r, u) {
@@ -230,9 +166,21 @@ export function createVirtualDomApp(id, initial, r, u) {
         else {
             state = state;
         }
-        const newTree = renderVirtual(r(trigger, state));
+        const patternInput = renderVirtual(r(trigger, state));
+        const postf = patternInput[1];
+        const newTree = patternInput[0];
         const patches = diff(tree, newTree);
         container = patch(container, patches);
+        const enumerator = getEnumerator(postf);
+        try {
+            while (enumerator["System.Collections.IEnumerator.MoveNext"]()) {
+                const f = enumerator["System.Collections.Generic.IEnumerator`1.get_Current"]();
+                f();
+            }
+        }
+        finally {
+            enumerator.Dispose();
+        }
         tree = newTree;
     };
     handleEvent(void 0);
