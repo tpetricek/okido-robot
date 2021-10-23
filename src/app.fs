@@ -2,8 +2,17 @@ module App.Main
 open App.Html
 open Browser.Dom
 
+let sockKey = "s"
 let socks = 
   [ (4,1); (3,2); (2,3); (4,3); (3,4); (4,4); (4,5); (2,5); (2,6); (3,6) ]
+let robotImg = "robot.gif"
+let arrowPrefix = ""
+
+//let sockKey = "r"
+//let socks = 
+//  [ (4,1); (3,2); (3,4); (4,5); (2,6) ]
+//let robotImg = "kaz.gif"
+//let arrowPrefix = "b"
 
 type Event =
   | Reset 
@@ -56,20 +65,23 @@ let render trigger state =
         let r, c = state.Robot
         let style = sprintf "top:%dvw; left:%dvw;" (10*r-10) (10*c-10)
         let cls = "robot " + state.Animation
-        h?img [ "class" => cls; "src" => "robot.gif"; "style" => style ] [] 
+        h?img [ "class" => cls; "src" => robotImg; "style" => style ] [] 
       ]
       h?div ["class" => "prog"] [ 
         for p in state.Program ->
-          h?img [ "src" => p + ".gif" ] [] 
-        yield h?img [ "src" => sprintf "s%d.gif" (state.Objective+1); "class" => "objective" ] [] 
+          h?img [ "src" => arrowPrefix + p + ".gif" ] [] 
+        yield h?img [ "src" => sprintf "%s%d.gif" sockKey (state.Objective+1); "class" => "objective" ] [] 
       ]
     ]
     for r in 2 .. 4 -> h?div ["class" => "r" + string r] [ 
-      for b in 1 .. 6 -> h?div ["class" => "box b" + string b] [
-        match socks |> List.tryFindIndex ((=) (r, b)) with
-        | Some i -> yield h?img ["src" => "s" + string (i+1) + ".gif"] []
-        | _ -> ()
-      ]
+      for b in 1 .. 6 -> 
+        let idx = socks |> List.tryFindIndex ((=) (r, b))
+        let cls = if idx <> None then "socky" else ""
+        h?div ["class" => "box b" + string b + " " + cls ] [
+          match idx with
+          | Some i -> yield h?img ["src" => sockKey + string (i+1) + ".gif"] []
+          | _ -> ()
+        ]
     ]
     let handlers e = [ 
       "id" => match e with Code c -> c | _ -> "go"
@@ -78,11 +90,11 @@ let render trigger state =
     ]
     yield h?div ["class" => "controls"] [
       //h?button [ "click" =!> triggerf Reset; "class" => "mr2" ] [ h?img ["src" => "reset.gif"] [] ]
-      h?button (handlers (Code "up")) [ h?img ["src" => "up.gif"] [] ]
-      h?button (handlers (Code "right")) [ h?img ["src" => "right.gif"] [] ]
-      h?button (handlers (Code "down")) [ h?img ["src" => "down.gif"] [] ]
-      h?button (("class" => "mr2")::(handlers (Code "left"))) [ h?img ["src" => "left.gif"] [] ]
-      h?button (handlers Play) [ h?img ["src" => "go.gif"] [] ]
+      h?button (handlers (Code "up")) [ h?img ["src" => arrowPrefix + "up.gif"] [] ]
+      h?button (handlers (Code "right")) [ h?img ["src" => arrowPrefix + "right.gif"] [] ]
+      h?button (handlers (Code "down")) [ h?img ["src" => arrowPrefix + "down.gif"] [] ]
+      h?button (("class" => "mr2")::(handlers (Code "left"))) [ h?img ["src" => arrowPrefix + "left.gif"] [] ]
+      h?button (handlers Play) [ h?img ["src" => arrowPrefix + "go.gif"] [] ]
 
     ]
   ]

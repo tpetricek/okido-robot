@@ -7,7 +7,13 @@ import { toText, printf, toConsole } from "./.fable/fable-library.3.1.1/String.j
 import { createVirtualDomApp, op_EqualsBangGreater, op_EqualsGreater, h, El_op_Dynamic_Z7C20BED5 } from "./html.fs.js";
 import { rangeNumber, empty as empty_1, map, singleton as singleton_1, append as append_1, delay } from "./.fable/fable-library.3.1.1/Seq.js";
 
+export const sockKey = "s";
+
 export const socks = ofArray([[4, 1], [3, 2], [2, 3], [4, 3], [3, 4], [4, 4], [4, 5], [2, 5], [2, 6], [3, 6]]);
+
+export const robotImg = "robot.gif";
+
+export const arrowPrefix = "";
 
 export class Event$ extends Union {
     constructor(tag, ...fields) {
@@ -175,20 +181,23 @@ export function render(trigger, state) {
         const arg10 = ((10 * r) - 10) | 0;
         style = toText(printf("top:%dvw; left:%dvw;"))(arg10)(arg20);
         const cls = "robot " + state.Animation;
-        return singleton_1(El_op_Dynamic_Z7C20BED5(h, "img")(ofArray([op_EqualsGreater("class", cls), op_EqualsGreater("src", "robot.gif"), op_EqualsGreater("style", style)]))(empty()));
-    }))), El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "prog")))(ofSeq(delay(() => append_1(map((p) => El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", p + ".gif")))(empty()), state.Program), delay(() => {
-        let arg10_1;
-        return singleton_1(El_op_Dynamic_Z7C20BED5(h, "img")(ofArray([op_EqualsGreater("src", (arg10_1 = ((state.Objective + 1) | 0), toText(printf("s%d.gif"))(arg10_1))), op_EqualsGreater("class", "objective")]))(empty()));
-    })))))]))), delay(() => append_1(map((r_1) => El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "r" + int32ToString(r_1))))(ofSeq(delay(() => map((b) => El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "box b" + int32ToString(b))))(ofSeq(delay(() => {
-        const matchValue = tryFindIndex((y) => equalArrays([r_1, b], y), socks);
-        if (matchValue != null) {
-            const i = matchValue | 0;
-            return singleton_1(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", ("s" + int32ToString(i + 1)) + ".gif")))(empty()));
-        }
-        else {
-            return empty_1();
-        }
-    }))), rangeNumber(1, 1, 6))))), rangeNumber(2, 1, 4)), delay(() => {
+        return singleton_1(El_op_Dynamic_Z7C20BED5(h, "img")(ofArray([op_EqualsGreater("class", cls), op_EqualsGreater("src", robotImg), op_EqualsGreater("style", style)]))(empty()));
+    }))), El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "prog")))(ofSeq(delay(() => append_1(map((p) => El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", (arrowPrefix + p) + ".gif")))(empty()), state.Program), delay(() => {
+        let arg20_1;
+        return singleton_1(El_op_Dynamic_Z7C20BED5(h, "img")(ofArray([op_EqualsGreater("src", (arg20_1 = ((state.Objective + 1) | 0), toText(printf("%s%d.gif"))(sockKey)(arg20_1))), op_EqualsGreater("class", "objective")]))(empty()));
+    })))))]))), delay(() => append_1(map((r_1) => El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "r" + int32ToString(r_1))))(ofSeq(delay(() => map((b) => {
+        const idx = tryFindIndex((y) => equalArrays([r_1, b], y), socks);
+        const cls_1 = (!equals(idx, void 0)) ? "socky" : "";
+        return El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", (("box b" + int32ToString(b)) + " ") + cls_1)))(ofSeq(delay(() => {
+            if (idx != null) {
+                const i = idx | 0;
+                return singleton_1(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", (sockKey + int32ToString(i + 1)) + ".gif")))(empty()));
+            }
+            else {
+                return empty_1();
+            }
+        })));
+    }, rangeNumber(1, 1, 6))))), rangeNumber(2, 1, 4)), delay(() => {
         const handlers = (e) => {
             let c_1;
             return ofArray([op_EqualsGreater("id", (e.tag === 3) ? (c_1 = e.fields[0], c_1) : "go"), op_EqualsBangGreater("touchstart", (_arg3, je) => {
@@ -198,7 +207,7 @@ export function render(trigger, state) {
                 trigger(e);
             })]);
         };
-        return singleton_1(El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "controls")))(ofArray([El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "up")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "up.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "right")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "right.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "down")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "down.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(cons(op_EqualsGreater("class", "mr2"), handlers(new Event$(3, "left"))))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "left.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(1)))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", "go.gif")))(empty())))])));
+        return singleton_1(El_op_Dynamic_Z7C20BED5(h, "div")(singleton(op_EqualsGreater("class", "controls")))(ofArray([El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "up")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", arrowPrefix + "up.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "right")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", arrowPrefix + "right.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(3, "down")))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", arrowPrefix + "down.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(cons(op_EqualsGreater("class", "mr2"), handlers(new Event$(3, "left"))))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", arrowPrefix + "left.gif")))(empty()))), El_op_Dynamic_Z7C20BED5(h, "button")(handlers(new Event$(1)))(singleton(El_op_Dynamic_Z7C20BED5(h, "img")(singleton(op_EqualsGreater("src", arrowPrefix + "go.gif")))(empty())))])));
     })))))));
 }
 
